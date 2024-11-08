@@ -1,0 +1,52 @@
+# Python cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pdb
+*.swp
+
+# Virtual environment directories
+detection_env/
+
+# Local configuration files
+*.env
+*.vscode/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Pytest cache
+.cache/
+
+# Logs
+*.log
+
+# Static and media files (uploaded images/videos)
+static/
+
+# Model weights (you may want to ignore model files unless you’re versioning them)
+*.pt
+yolov8n.pt
+yolov8best.pt
+
+# Image and Video files to ignore
+*.mp4
+*.avi
+*.jpg
+*.jpeg
+*.png
+
+# Mac OS specific files
+.DS_Store
+
+# Windows specific files
+Thumbs.db
+
+# IDE or text editor files (e.g., VSCode, PyCharm, etc.)
+.vscode/
+.idea/
+
+# Other temporary files
+*.bak
+*.tmp

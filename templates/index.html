@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Image or Video</title>
+    <style>
+        /* Reset some default styling */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        /* General body styling */
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+
+        /* Main container styling */
+        .container {
+            max-width: 600px;
+            width: 100%;
+            background-color: #fff;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        h2 {
+            color: #333;
+            margin-bottom: 1rem;
+        }
+
+        label {
+            font-weight: bold;
+            color: #555;
+        }
+
+        select, input[type="file"], button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 8px;
+            margin-bottom: 1rem;
+            font-size: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        /* Button styling */
+        button {
+            background-color: #4CAF50;
+            color: white;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            border: none;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        /* Result container styling */
+        .result-container {
+            margin-top: 2rem;
+            text-align: center;
+        }
+
+        h3 {
+            color: #333;
+            margin-bottom: 1rem;
+        }
+
+        /* Media styling */
+        video, img {
+            max-width: 100%;
+            border-radius: 8px;
+            margin-top: 1rem;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Upload an Image or Video for Detection</h2>
+        <form action="/detect" enctype="multipart/form-data" method="post">
+            <label for="model_type">Select Detection Model:</label>
+            <select name="model_type" id="model_type" required>
+                <option value="dog">Dog Detection</option>
+                <option value="pothole">Pothole Detection</option>
+            </select>
+            <input name="file" type="file" accept="image/*,video/*" required>
+            <button type="submit">Upload and Detect</button>
+        </form>
+
+        {% if file_url %}
+        <div class="result-container">
+            <h3>Detection Result:</h3>
+            {% if file_url.endswith(".mp4") %}
+                <video width="800" controls>
+                    <source src="{{ file_url }}" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            {% else %}
+                <img src="{{ file_url }}" alt="Detected Image">
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>
