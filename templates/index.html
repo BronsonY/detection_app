@@ -95,7 +95,7 @@
 <body>
     <div class="container">
         <h1>Upload an Image or Video for Detection</h1>
-        <form id="uploadForm" method="post" enctype="multipart/form-data" action="/detect">
+        <form id="uploadForm" method="post" enctype="multipart/form-data">
             <label for="file">Upload Image or Video:</label>
             <input type="file" name="file" id="file" accept="image/*,video/*" required>
             
@@ -121,7 +121,7 @@
             const formData = new FormData(uploadForm);
 
             try {
-                const response = await fetch("/detect", {
+                const response = await fetch("http://127.0.0.1:8000/detect", {
                     method: "POST",
                     body: formData,
                 });
@@ -138,28 +138,31 @@
 
                 statusMessage.textContent = "Processing... Please wait.";
 
-                // Poll the status endpoint
                 const checkStatus = setInterval(async () => {
-                    const statusResponse = await fetch(`/status/${taskId}`);
-                    const statusData = await statusResponse.json();
+                    try {
+                        const statusResponse = await fetch(`http://127.0.0.1:8000/status/${taskId}`);
+                        const statusData = await statusResponse.json();
 
-                    if (statusData.status === "Completed") {
-                        statusMessage.textContent = "Processing completed!";
-                        const fileUrl = statusData.file_url;
+                        if (statusData.status === "Completed") {
+                            statusMessage.textContent = "Processing completed!";
+                            const fileUrl = statusData.file_url;
 
-                        if (fileUrl) {
-                            if (fileUrl.endsWith(".mp4")) {
-                                resultContainer.innerHTML = `<video width="800" controls><source src="${fileUrl}" type="video/mp4">Your browser does not support the video tag.</video>`;
-                            } else {
-                                resultContainer.innerHTML = `<img src="${fileUrl}" alt="Detected Image" />`;
+                            if (fileUrl) {
+                                resultContainer.innerHTML = fileUrl.endsWith(".mp4") ? 
+                                    `<video width="800" controls><source src="${fileUrl}" type="video/mp4">Your browser does not support the video tag.</video>` :
+                                    `<img src="${fileUrl}" alt="Detected Image" />`;
                             }
+                            clearInterval(checkStatus);
+                        } else if (statusData.status === "Failed") {
+                            statusMessage.textContent = "Detection failed. Please try again.";
+                            clearInterval(checkStatus);
                         }
-                        clearInterval(checkStatus); // Stop polling
-                    } else if (statusData.status === "Failed") {
-                        statusMessage.textContent = "Detection failed. Please try again.";
-                        clearInterval(checkStatus); // Stop polling
+                    } catch (error) {
+                        console.error("Status check error:", error);
+                        clearInterval(checkStatus);
+                        statusMessage.textContent = "An error occurred. Please try again.";
                     }
-                }, 2000); // Poll every 2 seconds
+                }, 2000); 
             } catch (error) {
                 console.error("Error uploading file:", error);
                 statusMessage.textContent = "An error occurred. Please try again.";
