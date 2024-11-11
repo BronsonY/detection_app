@@ -15,7 +15,7 @@ app = FastAPI()
 # Enable CORS to allow cross-origin requests
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*","http://localhost:8000" ],  # Set to ["http://localhost:3000"] or specific domain in production
+    allow_origins=["https://detection-demo.lamzingtech.com" ],  # Set to ["http://localhost:3000"] or specific domain in production
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -52,37 +52,40 @@ def process_file(file_path: Path, output_path: Path, model, classes, conf, task_
             cv2.imwrite(str(output_path), annotated_frame)
 
         elif file_path.suffix in [".mp4", ".avi", ".mov"]:  # Video processing
-            input_video = cv2.VideoCapture(str(file_path))
-            frame_width = int(input_video.get(cv2.CAP_PROP_FRAME_WIDTH))
-            frame_height = int(input_video.get(cv2.CAP_PROP_FRAME_HEIGHT))
-            fps = int(input_video.get(cv2.CAP_PROP_FPS))
+    try:
+        input_video = cv2.VideoCapture(str(file_path))
+        if not input_video.isOpened():
+            raise Exception("Error opening video file")
 
-            # Set up VideoWriter for output video
-            temp_output_path = UPLOAD_FOLDER / f"temp_{output_path.name}"
-            video_writer = cv2.VideoWriter(str(temp_output_path), cv2.VideoWriter_fourcc(*'mp4v'), fps, (frame_width, frame_height))
+        frame_width = int(input_video.get(cv2.CAP_PROP_FRAME_WIDTH))
+        frame_height = int(input_video.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        fps = int(input_video.get(cv2.CAP_PROP_FPS))
 
-            # Perform detection on each frame with specified classes and confidence
-            results = model.predict(source=str(file_path), stream=True, classes=classes, conf=conf)
-            for r in results:
-                annotated_frame = r.plot()  # Annotate the detection on the frame
-                video_writer.write(annotated_frame)  # Write to output video
+        # Set up VideoWriter for output video
+        temp_output_path = UPLOAD_FOLDER / f"temp_{output_path.name}"
+        video_writer = cv2.VideoWriter(str(temp_output_path), cv2.VideoWriter_fourcc(*'mp4v'), fps, (frame_width, frame_height))
 
-            # Release video resources
-            input_video.release()
-            video_writer.release()
+        # Perform detection on each frame with specified classes and confidence
+        results = model.predict(source=str(file_path), stream=True, classes=classes, conf=conf)
+        for r in results:
+            annotated_frame = r.plot()  # Annotate the detection on the frame
+            video_writer.write(annotated_frame)  # Write to output video
 
-            # Re-encode with FFmpeg for browser compatibility
-            subprocess.run([
-                "ffmpeg", "-y", "-i", str(temp_output_path), "-vcodec", "libx264", "-acodec", "aac", "-strict", "-2", str(output_path)
-            ])
-            temp_output_path.unlink()  # Delete the temporary file
+        # Release video resources
+        input_video.release()
+        video_writer.release()
 
-        # Update the task status to 'Completed'
-        task_statuses[task_id] = {"status": "Completed", "file_url": f"/static/{output_path.name}"}
-    
+        # Re-encode with FFmpeg for browser compatibility
+        subprocess.run([
+            "ffmpeg", "-y", "-i", str(temp_output_path), "-vcodec", "libx264", "-acodec", "aac", "-strict", "-2", str(output_path)
+        ])
+        temp_output_path.unlink()  # Delete the temporary file
+
     except Exception as e:
-        print(f"Error processing file: {e}")
-        task_statuses[task_id] = {"status": "Failed"}
+        print(f"Error processing video: {e}")
+        task_statuses[task_id] = {"status": "Failed", "error": str(e)}
+        return
+
 
 # Endpoint to handle file uploads, model selection, and perform detection
 @app.post("/detect")
