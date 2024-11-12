@@ -15,8 +15,8 @@ app = FastAPI()
 # Enable CORS to allow cross-origin requests
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:8000" ],  # Set to ["http://localhost:3000"] or specific domain in production
-    #allow_origins=["https://detection-demo.lamzingtech.com" ],
+    # allow_origins=["http://localhost:8000" ],  # Set to ["http://localhost:3000"] or specific domain in production
+    allow_origins=["https://detection-demo.lamzingtech.com" ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

@@ -121,7 +121,7 @@
             const formData = new FormData(uploadForm);
 
             try {
-                const response = await fetch("http://localhost:8000/detect", {
+                const response = await fetch("https://detection-demo.lamzingtech.com/detect", {
                     method: "POST",
                     body: formData,
                 });
@@ -140,7 +140,7 @@
 
                 const checkStatus = setInterval(async () => {
                     try {
-                        const statusResponse = await fetch(`http://localhost:8000/status/${taskId}`);
+                        const statusResponse = await fetch(`https://detection-demo.lamzingtech.com/status/${taskId}`);
                         const statusData = await statusResponse.json();
 
                         if (statusData.status === "Completed") {
